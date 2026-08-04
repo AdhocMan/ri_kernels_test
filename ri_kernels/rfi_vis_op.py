@@ -88,13 +88,13 @@ def prepare_indices(n_ant, a1, a2):
 
 
 _DIR_PATH = os.path.dirname(os.path.realpath(__file__))
-_PKG_SUBPATH = os.path.join("tabascal", "components", "ffi")
+_PKG_SUBPATH = os.path.join("ri_kernels")
 
 
 def _candidate_dirs():
     dirs = [_DIR_PATH]
     try:
-        spec = importlib.util.find_spec("tabascal.components.ffi")
+        spec = importlib.util.find_spec("ri_kernels")
         if spec and spec.submodule_search_locations:
             dirs.extend(spec.submodule_search_locations)
     except (ModuleNotFoundError, ValueError):
@@ -124,15 +124,15 @@ def _load_library(name):
 
 
 
-_TAB_LIB_GPU_NAME = "libtabascal_cuda.so"
+_TAB_LIB_GPU_NAME = "libri_kernels_cuda.so"
 _TAB_PLATFORM_NAME = "CUDA"
 
 if any("rocm" in str(s) for s in list(jax.devices())):
-    _TAB_LIB_GPU_NAME = "libtabascal_hip.so"
+    _TAB_LIB_GPU_NAME = "libri_kernels_hip.so"
     _TAB_PLATFORM_NAME = "ROCM"
 
 
-_TAB_LIB = _load_library("libtabascal.so")
+_TAB_LIB = _load_library("libri_kernels.so")
 _TAB_LIB_GPU = _load_library(_TAB_LIB_GPU_NAME)
 
 if _TAB_LIB:
@@ -193,7 +193,7 @@ def _dtype_suffix(amp_dtype, phase_dtype):
 def _check_tab_lib():
     if _TAB_LIB is None:
         raise RuntimeError(
-            f"FFI selected, but libtabascal.so not found! "
+            f"FFI selected, but libri_kernels.so not found! "
             f"Install the wheel built via scikit-build-core or build from "
             f"{_DIR_PATH}"
         )
@@ -203,7 +203,7 @@ def _check_tab_lib_gpu():
     if _TAB_LIB_GPU is None:
         raise RuntimeError(
             f"FFI selected, but {_TAB_LIB_GPU_NAME} not found! "
-            f"Rebuild the wheel with -Ccmake.define.TABASCAL_GPU=CUDA (or ROCM)"
+            f"Rebuild the wheel with -Ccmake.define.RI_KERNELS_GPU=CUDA (or ROCM)"
         )
 
 
