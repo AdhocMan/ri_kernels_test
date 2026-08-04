@@ -55,6 +55,7 @@ SHAPES = {
     "vector": Shape(n_ant=4, n_freq=2, n_time=3, n_rfi=4, n_int_freq=4, n_int_time=2),
     # n_red = 1, everything is handled by the scalar tail.
     "scalar": Shape(n_ant=6, n_freq=1, n_time=2, n_rfi=1, n_int_freq=1, n_int_time=1),
+    "large": Shape(n_ant=16, n_freq=4, n_time=10, n_rfi=24, n_int_freq=6, n_int_time=8),
 }
 
 # Shape used by the tests that are not specifically about shapes.
