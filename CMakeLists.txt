@@ -143,7 +143,7 @@ if(RI_KERNELS_CUDA)
   add_library(ri_kernels_cuda SHARED ${RI_KERNELS_GPU_SOURCES})
   # set_target_properties(ri_kernels_cuda PROPERTIES OUTPUT_NAME "ri_kernels_cuda_${CUDAToolkit_VERSION_MAJOR}")
   target_include_directories(ri_kernels_cuda PRIVATE ${JAXLIB_HOME}/include ./src)
-  target_link_libraries(ri_kernels_cuda PRIVATE CUDA::cudart)
+  target_link_libraries(ri_kernels_cuda PRIVATE CUDA::cudart_static)
   target_compile_options(ri_kernels_cuda PRIVATE
 	$<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=940>
 	$<$<COMPILE_LANGUAGE:CUDA>:--diag-suppress=2473>
