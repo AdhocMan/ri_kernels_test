@@ -1,0 +1,57 @@
+[build-system]
+requires = [
+    "scikit-build-core>=0.10",
+    "jax==0.6.0", # Use minimum FFI api to build
+]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+cmake.version = ">=3.20"
+cmake.build-type = "Release"
+cmake.source-dir = "."
+wheel.packages = ["ri_kernels"]
+wheel.py-api = "py3"
+
+[[tool.scikit-build.overrides]]
+if.env.RI_KERNELS_CUDA = "(?i)1|on|true|yes"
+cmake.define.RI_KERNELS_CUDA = "ON"
+
+[[tool.scikit-build.overrides]]
+if.env.RI_KERNELS_ROCM = "(?i)1|on|true|yes"
+cmake.define.RI_KERNELS_ROCM = "ON"
+
+# ── Project metadata ───────────────────────────────────────────────────────────
+
+[project]
+name = "ri_kernels"
+version = "0.0.1"
+license = {file = "LICENSE"}
+readme = "README.md"
+authors = [
+  {name = "Chris Finlay", email = "christopher.finlay@epfl.ch"},
+]
+maintainers = [
+  {name = "Chris Finlay", email = "christopher.finlay@epfl.ch"}
+]
+description = "RI Kernels"
+
+requires-python = ">=3.10"
+dependencies = [
+    "jax>=0.6.0",
+]
+
+[project.optional-dependencies]
+test  = ["pytest", "pytest-cov"]
+cuda12 = ["jax[cuda12]"]
+cuda13 = ["jax[cuda13]"]
+
+[project.urls]
+Repository = "https://github.com/epfl-radio-astro/ri_kernels.git"
+
+
+# ── Pytest ─────────────────────────────────────────────────────────────────────
+
+[tool.pytest.ini_options]
+log_cli       = true
+log_cli_level = "WARNING"
+
