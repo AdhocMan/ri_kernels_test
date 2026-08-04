@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "tensor.hpp"
+#include "visibility.h"
 #include "xla/ffi/api/c_api.h"
 #include "xla/ffi/api/ffi.h"
 
@@ -308,6 +309,10 @@ ffi::Error calc_rfi_jvp_cpu_impl(
 
   return ffi::Error::Success();
 }
+
+// Exported: see visibility.h. The attribute has to sit inside the extern "C".
+extern "C" RI_KERNELS_API XLA_FFI_Error *
+calc_rfi_jvp_cpu(XLA_FFI_CallFrame *call_frame);
 
 XLA_FFI_DEFINE_HANDLER_SYMBOL(calc_rfi_jvp_cpu, calc_rfi_jvp_cpu_impl,
                               ffi::Ffi::Bind()

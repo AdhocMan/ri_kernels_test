@@ -11,6 +11,7 @@
 #include "gpu_compat.h"
 #include "tensor.hpp"
 #include "util_gpu.h"
+#include "visibility.h"
 #include "xla/ffi/api/c_api.h"
 #include "xla/ffi/api/ffi.h"
 
@@ -229,6 +230,10 @@ ffi::Error calc_rfi_vis_gpu_impl(
                                                    rfi_phase, rfi_vis);
   }
 }
+
+// Exported: see visibility.h. The attribute has to sit inside the extern "C".
+extern "C" RI_KERNELS_API XLA_FFI_Error *
+calc_rfi_vis_gpu(XLA_FFI_CallFrame *call_frame);
 
 XLA_FFI_DEFINE_HANDLER_SYMBOL(calc_rfi_vis_gpu, calc_rfi_vis_gpu_impl,
                               ffi::Ffi::Bind()

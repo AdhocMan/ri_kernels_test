@@ -24,6 +24,30 @@ set(CUDA_STANDARD_REQUIRED ON)
 
 include(CMakeDependentOption)
 include(FetchContent)
+include(CheckLinkerFlag)
+
+# --exclude-libs is a GNU ld / lld feature; Apple's linker rejects it.
+check_linker_flag(CXX "-Wl,--exclude-libs,ALL" RI_KERNELS_HAVE_EXCLUDE_LIBS)
+
+# Export only the FFI entry points annotated with RI_KERNELS_API (see
+# src/visibility.h). Everything else, including symbols pulled in from static
+# archives such as Highway or a statically linked CUDA runtime, stays out of
+# the dynamic symbol table. Without this the CUDA runtime symbols would be
+# exported and could be interposed by the runtime XLA already loaded into the
+# process, since the dynamic loader searches the global scope before a dlopen'd
+# object's own definitions.
+function(ri_kernels_restrict_exports target)
+	set_target_properties(${target} PROPERTIES
+		C_VISIBILITY_PRESET hidden
+		CXX_VISIBILITY_PRESET hidden
+		CUDA_VISIBILITY_PRESET hidden
+		HIP_VISIBILITY_PRESET hidden
+		VISIBILITY_INLINES_HIDDEN ON
+	)
+	if(RI_KERNELS_HAVE_EXCLUDE_LIBS)
+		target_link_options(${target} PRIVATE "-Wl,--exclude-libs,ALL")
+	endif()
+endfunction()
 
 if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
 	cmake_policy(SET CMP0135 NEW)
@@ -138,15 +162,19 @@ if(RI_KERNELS_ROCM)
 endif()
 
 # Normalize shared-library suffix across platforms so Python loader finds
-# libri_kernels*.so on macOS as well as Linux.
+# libri_kernels*.so on macOS as well as Linux, and restrict the exported
+# symbols to the annotated FFI entry points.
 if(TARGET ri_kernels)
   set_target_properties(ri_kernels PROPERTIES SUFFIX ".so")
+  ri_kernels_restrict_exports(ri_kernels)
 endif()
 if(TARGET ri_kernels_cuda)
   set_target_properties(ri_kernels_cuda PROPERTIES SUFFIX ".so")
+  ri_kernels_restrict_exports(ri_kernels_cuda)
 endif()
 if(TARGET ri_kernels_hip)
   set_target_properties(ri_kernels_hip PROPERTIES SUFFIX ".so")
+  ri_kernels_restrict_exports(ri_kernels_hip)
 endif()
 
 # Install rules so scikit-build-core stages libraries into the wheel at the
