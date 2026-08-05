@@ -69,7 +69,7 @@ option(RI_KERNELS_MULTI_ARCH "Build kernels for multiple CPU architectues with d
 set(RI_KERNELS_GPU_INSTALL_DIR "ri_kernels" CACHE STRING
 	"Directory inside the wheel that the GPU libraries are installed into")
 
-set(CMAKE_CUDA_ARCHITECTURES "80;90a-real;90" CACHE STRING "CUDA Architectures")
+set(CMAKE_CUDA_ARCHITECTURES "75-real;80-real;90-real;90-virtual" CACHE STRING "CUDA Architectures")
 set(CMAKE_HIP_ARCHITECTURES "gfx90a;gfx942;gfx1030;gfx1100" CACHE STRING "HIP Architectures")
 
 set(Python_EXECUTABLE "python3" CACHE STRING "The python interpreter")

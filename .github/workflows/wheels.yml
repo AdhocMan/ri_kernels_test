@@ -75,9 +75,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # `archs` overrides the CMAKE_CUDA_ARCHITECTURES default in
+        # CMakeLists.txt, which is kept to what any CUDA 12.x can build. The
+        # published wheels target one cubin per compute-capability *major*
+        # (plus 7.5, the CUDA 13 floor): cubins are binary compatible upward
+        # within a major, so 8.0 covers 8.6/8.7/8.9, 10.0 covers 10.3 (B300)
+        # and 12.0 covers 12.1 (GB10). 10.x and 12.x are separate families and
+        # need separate cubins. This is the set the jax CUDA plugin itself
+        # ships, minus 7.0, which only CUDA 12 can still build. The trailing
+        # `-virtual` embeds PTX once, as the JIT fallback for future GPUs.
         cuda:
-          - { major: "12", pkg: "12-9", home: "/usr/local/cuda-12.9" }
-          - { major: "13", pkg: "13-0", home: "/usr/local/cuda-13.0" }
+          - major: "12"
+            pkg: "12-9"
+            home: "/usr/local/cuda-12.9"
+            archs: "70-real;75-real;80-real;90-real;100-real;120-real;120-virtual"
+          - major: "13"
+            pkg: "13-0"
+            home: "/usr/local/cuda-13.0"
+            # CUDA 13 dropped Maxwell/Pascal/Volta; Turing is the floor.
+            archs: "75-real;80-real;90-real;100-real;120-real;120-virtual"
         platform:
           - { os: ubuntu-latest, arch: x86_64, repo_arch: x86_64 }
           - { os: ubuntu-24.04-arm, arch: aarch64, repo_arch: sbsa }
@@ -103,9 +119,15 @@ jobs:
             cuda-nvcc-${{ matrix.cuda.pkg }}
             cuda-cudart-devel-${{ matrix.cuda.pkg }}
             cuda-cccl-${{ matrix.cuda.pkg }}
+          # CMAKE_ARGS is forwarded to the configure step by scikit-build-core.
+          # It has to carry the architectures rather than SKBUILD_CMAKE_DEFINE,
+          # which splits its own value on `;`. The quotes keep cibuildwheel's
+          # shell-style parser from reading the separators as command
+          # terminators.
           CIBW_ENVIRONMENT_LINUX: >
             CUDACXX=${{ matrix.cuda.home }}/bin/nvcc
             PATH=${{ matrix.cuda.home }}/bin:$PATH
+            CMAKE_ARGS="-DCMAKE_CUDA_ARCHITECTURES=${{ matrix.cuda.archs }}"
           # No test here: installing the wheel would pull ri_kernels==<version>
           # from the index, which does not exist yet for an unreleased version. The
           # library is smoke-tested below instead.
