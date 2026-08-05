@@ -9,7 +9,7 @@ name: Wheels
 # The CUDA wheels are add-ons: they contain no Python code and depend on
 # ri_kernels of the exact same version. ci/make_variant.py derives their build
 # metadata from pyproject.toml. Wheels are built on every push and pull request;
-# they are only uploaded to PyPI when a GitHub Release is published.
+# they are only uploaded to TestPyPI when a GitHub Release is published.
 
 on:
   push:
@@ -107,7 +107,7 @@ jobs:
             CUDACXX=${{ matrix.cuda.home }}/bin/nvcc
             PATH=${{ matrix.cuda.home }}/bin:$PATH
           # No test here: installing the wheel would pull ri_kernels==<version>
-          # from PyPI, which does not exist yet for an unreleased version. The
+          # from the index, which does not exist yet for an unreleased version. The
           # library is smoke-tested below instead.
           CIBW_TEST_COMMAND: ""
 
@@ -136,8 +136,8 @@ jobs:
           fi
           echo "Releasing version $version"
 
-  # One publish job per PyPI project: trusted publishing binds a project to a
-  # single workflow + environment, so they cannot share one.
+  # One publish job per TestPyPI project: trusted publishing binds a project to
+  # a single workflow + environment, so they cannot share one.
   publish_ri_kernels:
     name: Publish ri_kernels
     if: github.event_name == 'release'
@@ -145,7 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi-ri_kernels
-      url: https://pypi.org/p/ri_kernels
+      url: https://test.pypi.org/p/ri_kernels
     permissions:
       id-token: write
     steps:
@@ -159,6 +159,8 @@ jobs:
           name: sdist-ri_kernels
           path: dist
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
 
   # The CUDA packages pin ri_kernels==<version>, so the base package has to be
   # on the index first.
@@ -169,7 +171,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi-ri_kernels_cuda12
-      url: https://pypi.org/p/ri_kernels_cuda12
+      url: https://test.pypi.org/p/ri_kernels_cuda12
     permissions:
       id-token: write
     steps:
@@ -179,6 +181,8 @@ jobs:
           path: dist
           merge-multiple: true
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
 
   publish_ri_kernels_cuda13:
     name: Publish ri_kernels_cuda13
@@ -187,7 +191,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi-ri_kernels_cuda13
-      url: https://pypi.org/p/ri_kernels_cuda13
+      url: https://test.pypi.org/p/ri_kernels_cuda13
     permissions:
       id-token: write
     steps:
@@ -197,3 +201,5 @@ jobs:
           path: dist
           merge-multiple: true
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
