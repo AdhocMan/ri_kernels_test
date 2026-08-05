@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pypa/cibuildwheel@v3
+      - uses: pypa/cibuildwheel@v4.2.0
         env:
           CIBW_BUILD_VERBOSITY: 1
           CIBW_TEST_REQUIRES: pytest numpy
@@ -89,7 +89,7 @@ jobs:
           python -m pip install --disable-pip-version-check tomlkit
           python ci/make_variant.py --cuda ${{ matrix.cuda.major }}
 
-      - uses: pypa/cibuildwheel@v3
+      - uses: pypa/cibuildwheel@v4.2.0
         env:
           CIBW_BUILD_VERBOSITY: 1
           # nvcc, the CUDA runtime headers/static lib, and CUB, installed into
