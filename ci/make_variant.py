@@ -56,6 +56,22 @@ def main(argv: list[str] | None = None) -> int:
     project = doc["project"]
     version = str(project["version"])
 
+    # `ri_kernels[cuda{major}]` pins this add-on at the version it is built
+    # alongside, so the version string lives in the extras table as well as in
+    # `[project].version`. Catch the two falling out of step here, before the
+    # table is replaced below - CI runs this for both CUDA majors on every push.
+    extra = f"cuda{major}"
+    pin = f"{name}=={version}"
+    requirements = [str(req) for req in project["optional-dependencies"][extra]]
+    if pin not in requirements:
+        print(
+            f"error: the '{extra}' extra in pyproject.toml does not pin "
+            f"'{pin}'; it lists {requirements}. Update it to match "
+            f"[project].version.",
+            file=sys.stderr,
+        )
+        return 1
+
     project["name"] = name
     project["description"] = f"RI Kernels - CUDA {major} kernels"
     # The add-on carries no Python code of its own; everything comes from the

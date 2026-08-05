@@ -5,14 +5,20 @@ calls.
 
 ## Installation
 
-The CPU kernels and all of the Python code live in `ri_kernels`:
+The CPU kernels and all of the Python code live in `ri_kernels`. The GPU kernels
+ship as add-on packages, one per CUDA major version, selected with an extra:
 
 ```bash
-pip install ri_kernels
+pip install ri_kernels               # CPU kernels only
+pip install "ri_kernels[cuda12]"     # + CUDA 12 kernels and jax[cuda12]
+pip install "ri_kernels[cuda13]"     # + CUDA 13 kernels and jax[cuda13]
 ```
 
-The GPU kernels ship as add-on packages, one per CUDA major version. Pick the
-one matching your `jaxlib`; it pulls in `ri_kernels` itself:
+Quote the extra: `zsh` and `fish` both try to glob a bare `[...]`.
+
+The add-on packages can also be installed by name, which brings in `ri_kernels`
+itself but leaves your `jaxlib` alone — use this if you already have a CUDA JAX
+installed some other way:
 
 ```bash
 pip install ri_kernels_cuda12   # for jax[cuda12]
@@ -39,7 +45,10 @@ RI_KERNELS_ROCM=1 pip install .    # CPU + ROCm, needs hipcc
 ```
 
 Both libraries land in the `ri_kernels` package directory in that case, which is
-also a location the loader searches.
+also a location the loader searches. Note that `pip install .[cuda12]` is a
+different thing: the extra resolves `ri_kernels_cuda12` from the index, so it
+needs a published release. To build the GPU kernels from the checkout, use
+`RI_KERNELS_CUDA=1`.
 
 Other CMake options of note: `RI_KERNELS_CPU` (default `ON`),
 `RI_KERNELS_MULTI_ARCH` (dynamic SIMD dispatch, default `ON` — turn it off and
@@ -59,9 +68,11 @@ The tests skip themselves when no kernel library is importable, so make sure
 ## Releasing
 
 `.github/workflows/wheels.yml` builds all three distributions on every push and
-publishes them to PyPI when a GitHub Release is published. The release tag must
-match `[project].version` in `pyproject.toml`.
+publishes them to TestPyPI when a GitHub Release is published. The release tag
+must match `[project].version` in `pyproject.toml`.
 
 The CUDA wheels are generated from the same source tree by `ci/make_variant.py`,
-which rewrites `pyproject.toml` into the add-on's metadata; there is only one
-place to bump the version.
+which rewrites `pyproject.toml` into the add-on's metadata. Bumping the version
+means editing `[project].version` and the `ri_kernels_cuda1X==` pins in the
+`cuda12` / `cuda13` extras; `make_variant.py` refuses to build if they disagree,
+so a missed pin fails CI rather than shipping.
