@@ -14,8 +14,8 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-from ri_kernels import rfi_vis_op as rfi_vis_op_module
-from ri_kernels.rfi_vis_op import RFIVisOp, prepare_indices
+from ri_kernels.jax_api import rfi_vis_op as rfi_vis_op_module
+from ri_kernels.jax_api.rfi_vis_op import RFIVisOp, prepare_indices
 
 
 def ref_rfi_vis_kernel(rfi_amp_fine, rfi_phase, a1, a2):
