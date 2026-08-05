@@ -88,26 +88,43 @@ def prepare_indices(n_ant, a1, a2):
 
 
 _DIR_PATH = os.path.dirname(os.path.realpath(__file__))
-_PKG_SUBPATH = os.path.join("ri_kernels")
+
+# The CPU library ships inside ri_kernels itself, while the GPU libraries come
+# from optional add-on distributions (ri_kernels_cuda12, ri_kernels_cuda13,
+# ri_kernels_rocm) that install a top-level package of their own containing
+# nothing but the shared library. Search all of them. cuda13 is probed before
+# cuda12 so that a machine with both installed picks the newer toolkit.
+_PKG_NAMES = (
+    "ri_kernels",
+    "ri_kernels_cuda13",
+    "ri_kernels_cuda12",
+    "ri_kernels_rocm",
+)
+
+
+def _site_dirs():
+    dirs = list(site.getsitepackages())
+    user_site = site.getusersitepackages()
+    if user_site:
+        dirs.append(user_site)
+    purelib = sysconfig.get_paths().get("purelib")
+    if purelib:
+        dirs.append(purelib)
+    return dirs
 
 
 def _candidate_dirs():
     dirs = [_DIR_PATH]
-    try:
-        spec = importlib.util.find_spec("ri_kernels")
+    site_dirs = _site_dirs()
+    for pkg in _PKG_NAMES:
+        try:
+            spec = importlib.util.find_spec(pkg)
+        except (ImportError, ValueError):
+            spec = None
         if spec and spec.submodule_search_locations:
             dirs.extend(spec.submodule_search_locations)
-    except (ModuleNotFoundError, ValueError):
-        pass
-    site_dirs = list(site.getsitepackages())
-    user_site = site.getusersitepackages()
-    if user_site:
-        site_dirs.append(user_site)
-    purelib = sysconfig.get_paths().get("purelib")
-    if purelib:
-        site_dirs.append(purelib)
-    for sp in site_dirs:
-        dirs.append(os.path.join(sp, _PKG_SUBPATH))
+        for sp in site_dirs:
+            dirs.append(os.path.join(sp, pkg))
     return dirs
 
 
@@ -203,7 +220,9 @@ def _check_tab_lib_gpu():
     if _TAB_LIB_GPU is None:
         raise RuntimeError(
             f"FFI selected, but {_TAB_LIB_GPU_NAME} not found! "
-            f"Rebuild the wheel with -Ccmake.define.RI_KERNELS_GPU=CUDA (or ROCM)"
+            f"Install the matching add-on package (ri_kernels_cuda12 or "
+            f"ri_kernels_cuda13), or rebuild the wheel with "
+            f"-Ccmake.define.RI_KERNELS_CUDA=ON (or RI_KERNELS_ROCM=ON)"
         )
 
 

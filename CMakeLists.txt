@@ -62,6 +62,13 @@ option(RI_KERNELS_BUNDLED_LIBS "Use all bundled libraries" ON)
 cmake_dependent_option(RI_KERNELS_BUNDLED_HIGHWAY "Use bundled highway lib" ON "RI_KERNELS_BUNDLED_LIBS" OFF)
 option(RI_KERNELS_MULTI_ARCH "Build kernels for multiple CPU architectues with dynamic dispatch. When disabled, arch flags should be set through CMAKE_CXX_FLAGS." ON)
 
+# Directory inside the wheel the GPU libraries are installed into. The CPU
+# library always ships in the ri_kernels package, but the GPU libraries are
+# published as separate add-on distributions (ri_kernels_cuda12,
+# ri_kernels_cuda13) that own a top-level package directory of their own.
+set(RI_KERNELS_GPU_INSTALL_DIR "ri_kernels" CACHE STRING
+	"Directory inside the wheel that the GPU libraries are installed into")
+
 set(CMAKE_CUDA_ARCHITECTURES "80;90a-real;90" CACHE STRING "CUDA Architectures")
 set(CMAKE_HIP_ARCHITECTURES "gfx90a;gfx942;gfx1030;gfx1100" CACHE STRING "HIP Architectures")
 
@@ -186,11 +193,11 @@ if(TARGET ri_kernels)
 endif()
 if(TARGET ri_kernels_cuda)
   install(TARGETS ri_kernels_cuda
-	LIBRARY DESTINATION ri_kernels
-	RUNTIME DESTINATION ri_kernels)
+	LIBRARY DESTINATION ${RI_KERNELS_GPU_INSTALL_DIR}
+	RUNTIME DESTINATION ${RI_KERNELS_GPU_INSTALL_DIR})
 endif()
 if(TARGET ri_kernels_hip)
   install(TARGETS ri_kernels_hip
-	LIBRARY DESTINATION ri_kernels
-	RUNTIME DESTINATION ri_kernels)
+	LIBRARY DESTINATION ${RI_KERNELS_GPU_INSTALL_DIR}
+	RUNTIME DESTINATION ${RI_KERNELS_GPU_INSTALL_DIR})
 endif()

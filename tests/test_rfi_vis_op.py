@@ -71,8 +71,7 @@ BASELINE_LAYOUTS = pytest.mark.parametrize(
 def _available_devices():
     """One device per platform for which the matching FFI library was found."""
     devices = []
-    if rfi_vis_op_module._TAB_LIB is not None:
-        devices.extend(jax.devices("cpu")[:1])
+    devices.extend(jax.devices("cpu")[:1])
     if rfi_vis_op_module._TAB_LIB_GPU is not None:
         for platform in ("cuda", "rocm"):
             try:

@@ -49,6 +49,24 @@ cuda13 = ["jax[cuda13]"]
 Repository = "https://github.com/epfl-radio-astro/ri_kernels.git"
 
 
+# ── Wheel building ─────────────────────────────────────────────────────────────
+
+[tool.cibuildwheel]
+# The libraries are loaded with ctypes, not imported as extension modules, so
+# `wheel.py-api = "py3"` above makes one wheel per platform cover all supported
+# interpreters. Building for a single CPython therefore produces the complete
+# set; without this cibuildwheel would build five byte-identical wheels.
+build = "cp312-*"
+skip = "*-musllinux_*"
+build-frontend = "build"
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+
+[tool.cibuildwheel.macos.environment]
+# `src/*.cpp` uses <latch>, which libc++ annotates as macOS 11.0+.
+MACOSX_DEPLOYMENT_TARGET = "11.0"
+
+
 # ── Pytest ─────────────────────────────────────────────────────────────────────
 
 [tool.pytest.ini_options]

@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+
+build/
+dist/
+wheelhouse/
+_skbuild/
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# The package directories ci/make_variant.py generates (ri_kernels_cuda12/,
+# ri_kernels_cuda13/) are deliberately NOT ignored here: scikit-build-core
+# applies .gitignore when collecting `wheel.packages`, so ignoring them would
+# silently drop their __init__.py from the wheel.
