@@ -24,7 +24,7 @@ cmake.define.RI_KERNELS_ROCM = "ON"
 
 [project]
 name = "ri_kernels"
-version = "0.0.3"
+version = "0.0.4"
 license = {file = "LICENSE"}
 readme = "README.md"
 authors = [
